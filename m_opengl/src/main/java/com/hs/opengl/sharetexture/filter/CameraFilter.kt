@@ -1,8 +1,9 @@
-package com.hs.opengl.sharetexture.filter
+package com.rokid.rkdronecontrol.baseui.view.filter
 
 import android.content.Context
 import android.opengl.GLES20
 import com.hs.opengl.sharetexture.R
+import com.hs.opengl.sharetexture.filter.AbsFboFilter
 
 /**
  *

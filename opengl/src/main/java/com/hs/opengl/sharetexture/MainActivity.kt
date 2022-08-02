@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
         binding.btRecord.setOnClickListener {
             if (!isStart){
                 isStart = true
-                binding.cameraView.startRecord(speed)
+                binding.cameraView.startRecord(speed, "/sdcard/text.h264", true)
             } else {
                 isStart = false
                 binding.cameraView.stopRecord()
