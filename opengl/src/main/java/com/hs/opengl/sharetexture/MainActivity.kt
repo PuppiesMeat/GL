@@ -5,11 +5,18 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
+import android.util.Log
+import android.view.Surface
+import android.view.SurfaceHolder
 import androidx.camera.core.CameraX
 import androidx.camera.core.Preview
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import com.hs.opengl.sharetexture.databinding.ActivityMainBinding
+import com.hs.opengl.sharetexture.egl.HSEglContext
+import com.hs.opengl.sharetexture.filter.ReadPixelDataListener
 
 class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener {
     private lateinit var mCameraHelper: CameraHelper
@@ -33,17 +40,64 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
         binding.btRecord.setOnClickListener {
             if (!isStart){
                 isStart = true
-                binding.cameraView.startRecord(speed, "/sdcard/text.h264", true)
+//                binding.cameraView.startRecord(speed, "/sdcard/text.h264", true)
+                showPreview()
             } else {
                 isStart = false
-                binding.cameraView.stopRecord()
+//                binding.cameraView.stopRecord()
+                hidePreview()
             }
         }
+        hsFilters?.init(this, 1920, 1080)
+//        hsFilters?.startReadPixel(object : ReadPixelDataListener{
+//            override fun onNv21Data(nv21Data: ByteArray, width: Int, height: Int) {
+//                Log.d(TAG, "onNv21Data ${nv21Data.size}, $width x $height")
+//            }
+//
+//        })
+
     }
+
+    private fun hidePreview() {
+
+    }
+
+    private var surface: Surface? = null
+    private fun showPreview() {
+        if (binding.cameraView.holder.surface != null){
+            surface = binding.cameraView.holder.surface
+            hsFilters?.startShow(binding.cameraView.holder.surface, binding.cameraView.width, binding.cameraView.height)
+            return
+        }
+        binding.cameraView.holder.addCallback(object : SurfaceHolder.Callback{
+            override fun surfaceCreated(holder: SurfaceHolder) {
+                surface = holder.surface
+                hsFilters?.startShow(holder.surface, binding.cameraView.width, binding.cameraView.height)
+            }
+
+            override fun surfaceChanged(
+                holder: SurfaceHolder,
+                format: Int,
+                width: Int,
+                height: Int
+            ) {
+                hsFilters?.changePreviewSize(width, height)
+            }
+
+            override fun surfaceDestroyed(holder: SurfaceHolder) {
+            }
+
+        })
+    }
+
+    private var hsFilters:HSFilters? = HSFilters()
+    private var TAG = MainActivity::class.java.simpleName
 
     override fun onUpdated(output: Preview.PreviewOutput?) {
         output?.surfaceTexture?.let {
-            binding.cameraView.bindSurfaceTexture(it)
+//            binding.cameraView.bindSurfaceTexture(it)
+            Log.d(TAG, "onUpdate==========: ${Thread.currentThread().name}")
+            hsFilters?.bindSurfaceTexture(it)
         }
     }
 

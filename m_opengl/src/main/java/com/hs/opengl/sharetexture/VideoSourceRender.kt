@@ -30,8 +30,10 @@ class VideoSourceRender(_cameraView: GLSurfaceView) : GLSurfaceView.Renderer,
     private var mSurfaceWidth = 0
     private var mSurfaceHeight = 0
     private var isBinding = false
+    private var isCreated = false
     private fun bindingReady(isForce: Boolean = false) {
         if (isBinding && !isForce) return
+        if (!isCreated) return
         mCameraView.queueEvent {
             mSurfaceTexture?.let {
                 isBinding = true
@@ -48,6 +50,7 @@ class VideoSourceRender(_cameraView: GLSurfaceView) : GLSurfaceView.Renderer,
     private var TAG = VideoSourceRender::class.java.simpleName
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
         Log.i(TAG, "VideoSourceRender: onSurfaceCreated $mSurfaceTexture")
+        isCreated = true
         mSurfaceTexture?.let {
             bindingReady(true)
         }
