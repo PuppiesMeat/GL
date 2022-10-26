@@ -147,10 +147,10 @@ class VideoSourceRender(_cameraView: GLSurfaceView) : GLSurfaceView.Renderer,
         }
     }
 
-    private var readPixelFilter: ReadPixelFilter? = null
-    fun startReadPixel(readPixelDataListener: ReadPixelDataListener) {
+    private var readPixelFilter: NV21ReadPixelFilter? = null
+    fun startReadPixel(readPixelDataListener: NV21ReadPixelDataListener) {
         mCameraView.queueEvent {
-            readPixelFilter = ReadPixelFilter(mCameraView.context, eglContext!!)
+            readPixelFilter = NV21ReadPixelFilter(mCameraView.context, eglContext!!)
             readPixelFilter!!.setSize(mSurfaceWidth, mSurfaceHeight)
 //            mFilters.add(readPixelFilter)
             readPixelFilter!!.startReadPixels(readPixelDataListener)

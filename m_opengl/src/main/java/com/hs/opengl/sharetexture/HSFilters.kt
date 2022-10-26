@@ -165,10 +165,10 @@ class HSFilters : SurfaceTexture.OnFrameAvailableListener {
 
     }
 
-    private var readPixelFilter:ReadPixelFilter? =null
-    fun startReadPixel(listener: ReadPixelDataListener) {
+    private var readPixelFilter:NV21ReadPixelFilter? =null
+    fun startReadPixel(listener: NV21ReadPixelDataListener) {
         queueEvent {
-            readPixelFilter = ReadPixelFilter(applicationContext!!, eglContext!!.getEglContext()!!)
+            readPixelFilter = NV21ReadPixelFilter(applicationContext!!, eglContext!!.getEglContext()!!)
             readPixelFilter!!.setSize(mWidth, mHeight)
             readPixelFilter!!.startReadPixels(listener)
         }

@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView
 import android.util.AttributeSet
 import android.view.Surface
 import com.hs.opengl.sharetexture.filter.AbsFilter
+import com.hs.opengl.sharetexture.filter.NV21ReadPixelDataListener
 import com.hs.opengl.sharetexture.filter.ReadPixelDataListener
 
 /**
@@ -42,7 +43,7 @@ class HSGLSurfaceView(context: Context?, attributeSet: AttributeSet?) :
         mRender.addFilter(faceFboFilter)
     }
 
-    fun startReadPixel(readPixelDataListener: ReadPixelDataListener) {
+    fun startReadPixel(readPixelDataListener: NV21ReadPixelDataListener) {
         mRender.startReadPixel(readPixelDataListener)
     }
 

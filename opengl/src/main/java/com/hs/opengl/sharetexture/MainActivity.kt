@@ -2,6 +2,8 @@ package com.hs.opengl.sharetexture
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.*
+import android.opengl.GLES20
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -16,7 +18,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import com.hs.opengl.sharetexture.databinding.ActivityMainBinding
 import com.hs.opengl.sharetexture.egl.HSEglContext
+import com.hs.opengl.sharetexture.filter.NV21ReadPixelDataListener
+import com.hs.opengl.sharetexture.filter.NV21ReadPixelFilter
 import com.hs.opengl.sharetexture.filter.ReadPixelDataListener
+import com.rokid.android.camera.api.CameraVideoCapturer
+import com.rokid.android.camera.api.CapturerObserver
+import com.rokid.android.camera.capturer.RKCamera1Capturer
+import com.rokid.android.camera.capturer.RKCamera1Enumerator
+import java.io.ByteArrayOutputStream
 
 class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener {
     private lateinit var mCameraHelper: CameraHelper
@@ -37,6 +46,46 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
     private fun start() {
         mCameraHelper = CameraHelper(this, this)
         mCameraHelper.startPreview(1920, 1080, CameraX.LensFacing.FRONT )
+//        val capturer = RKCamera1Capturer("1", object : CameraVideoCapturer.CameraEventsHandler{
+//            override fun onCameraClosed() {
+//
+//            }
+//
+//            override fun onCameraDisconnected() {
+//            }
+//
+//            override fun onCameraError(errorDescription: String?) {
+//            }
+//
+//            override fun onCameraFreezed(errorDescription: String?) {
+//            }
+//
+//            override fun onCameraOpening(cameraName: String) {
+//            }
+//
+//            override fun onFirstFrameAvailable() {
+//            }
+//
+//        })
+//        val textureIds = IntArray(1)
+//        GLES20.glGenTextures(1, textureIds, 0)
+//        val texture = SurfaceTexture(textureIds[0])
+//        texture.setDefaultBufferSize(1920, 1080)
+//        capturer.initialize(texture, applicationContext, "dsfaf", object : CapturerObserver{
+//            override fun onCapturerStarted(success: Boolean) {
+//
+//            }
+//
+//            override fun onCapturerStopped() {
+//            }
+//
+//            override fun onFrameCaptured(surfaceTexture: SurfaceTexture, rotation: Int) {
+//                hsFilters?.bindSurfaceTexture(surfaceTexture)
+//
+//            }
+//
+//        })
+//        capturer.startCapture(1920, 1080, 30)
         binding.btRecord.setOnClickListener {
             if (!isStart){
                 isStart = true
@@ -49,13 +98,34 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
             }
         }
         hsFilters?.init(this, 1920, 1080)
-//        hsFilters?.startReadPixel(object : ReadPixelDataListener{
-//            override fun onNv21Data(nv21Data: ByteArray, width: Int, height: Int) {
-//                Log.d(TAG, "onNv21Data ${nv21Data.size}, $width x $height")
-//            }
-//
-//        })
+        hsFilters?.startReadPixel(object : NV21ReadPixelDataListener{
+            override fun onNv21Data(nv21Data: ByteArray, width: Int, height: Int) {
+                Log.d(TAG, "onNv21Data ${nv21Data.size}, $width x $height")
+                val bitmap  = nv21ToBitmap(nv21Data, width, height)
+                runOnUiThread {
+                    binding.ivPreview.setImageBitmap(bitmap)
+                }
+                Thread.sleep(50)
+                bitmap.recycle()
+            }
 
+        })
+
+    }
+
+    fun nv21ToBitmap(data:ByteArray, width:Int, height:Int):Bitmap{
+        val image = YuvImage(data, ImageFormat.NV21, width, height, null)
+        val bos = ByteArrayOutputStream()
+        image.compressToJpeg(Rect(0, 0, width, height), 100, bos)
+        try {
+            return BitmapFactory.decodeByteArray(bos.toByteArray(), 0, bos.size())
+        } finally {
+            try {
+                bos.close()
+            } catch (ex:Exception){
+                ex.printStackTrace()
+            }
+        }
     }
 
     private fun hidePreview() {
