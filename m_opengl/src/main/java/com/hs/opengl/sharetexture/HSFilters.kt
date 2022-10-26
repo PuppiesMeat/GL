@@ -122,13 +122,17 @@ class HSFilters : SurfaceTexture.OnFrameAvailableListener {
 
     }
 
-    fun bindSurfaceTexture(surfaceTexture: SurfaceTexture) {
-        if (isGlAttach && surfaceTexture == mSurfaceTexture) {
-            mSurfaceTexture = surfaceTexture
-            return
-        }
+    fun bindSurfaceTexture(surfaceTexture: SurfaceTexture, i: Int) {
+//        if (isGlAttach && surfaceTexture == mSurfaceTexture) {
+//            mSurfaceTexture = surfaceTexture
+//            return
+//        }
         mSurfaceTexture = surfaceTexture
-        internalAttachGLContext()
+        texture = i
+        queueEvent {
+            drawFrame()
+        }
+//        internalAttachGLContext()
     }
 
     fun createConsumer(): SurfaceTexture {

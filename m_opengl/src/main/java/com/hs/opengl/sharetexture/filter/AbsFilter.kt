@@ -2,7 +2,7 @@ package com.hs.opengl.sharetexture.filter
 
 import android.content.Context
 import android.opengl.GLES20
-import com.hs.opengl.sharetexture.OpenGLUtils
+import com.hs.opengl.sharetexture.egl.OpenGLUtils
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer

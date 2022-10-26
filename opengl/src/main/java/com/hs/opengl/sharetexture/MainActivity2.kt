@@ -18,7 +18,7 @@ import com.rokid.android.camera.api.CapturerObserver
 import com.rokid.android.camera.capturer.RKCamera1Capturer
 import java.io.ByteArrayOutputStream
 
-class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener {
+class MainActivity2 : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener {
     private lateinit var mCameraHelper: CameraHelper
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,10 +34,11 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
 
     private var isStart = false
     private var speed = 1.0f
+    val offscreenRender = OffscreenRender()
     private fun start() {
 //        mCameraHelper = CameraHelper(this, this)
 //        mCameraHelper.startPreview(1920, 1080, CameraX.LensFacing.FRONT )
-        val capturer = RKCamera1Capturer("1", object : CameraVideoCapturer.CameraEventsHandler{
+        val capturer = RKCamera1Capturer("1", object : CameraVideoCapturer.CameraEventsHandler {
             override fun onCameraClosed() {
 
             }
@@ -58,11 +59,12 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
             }
 
         })
-        val textureIds = IntArray(1)
-        GLES20.glGenTextures(1, textureIds, 0)
-        val texture = SurfaceTexture(textureIds[0])
-        texture.setDefaultBufferSize(1920, 1080)
-        capturer.initialize(texture, applicationContext, "dsfaf", object : CapturerObserver{
+//        val textureIds = IntArray(1)
+//        GLES20.glGenTextures(1, textureIds, 0)
+//        val texture = SurfaceTexture(textureIds[0])
+//        texture.setDefaultBufferSize(1920, 1080)
+        val texture = offscreenRender.createSurfaceTexture()
+        capturer.initialize(texture, applicationContext, "dsfaf", object : CapturerObserver {
             override fun onCapturerStarted(success: Boolean) {
 
             }
@@ -71,14 +73,14 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
             }
 
             override fun onFrameCaptured(surfaceTexture: SurfaceTexture, rotation: Int) {
-                hsFilters?.bindSurfaceTexture(surfaceTexture, textureIds[0])
-
+//                hsFilters?.bindSurfaceTexture(surfaceTexture, textureIds[0])
+                    offscreenRender.onDrawFrame(rotation)
             }
 
         })
         capturer.startCapture(1920, 1080, 30)
         binding.btRecord.setOnClickListener {
-            if (!isStart){
+            if (!isStart) {
                 isStart = true
 //                binding.cameraView.startRecord(speed, "/sdcard/text.h264", true)
                 showPreview()
@@ -88,11 +90,27 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
                 hidePreview()
             }
         }
-        hsFilters?.init(this, 1920, 1080)
-        hsFilters?.startReadPixel(object : NV21ReadPixelDataListener{
+//        hsFilters?.init(this, 1920, 1080)
+//        hsFilters?.startReadPixel(object : NV21ReadPixelDataListener{
+//            override fun onNv21Data(nv21Data: ByteArray, width: Int, height: Int) {
+//                Log.d(TAG, "onNv21Data ${nv21Data.size}, $width x $height")
+//                val bitmap  = nv21ToBitmap(nv21Data, width, height)
+//                runOnUiThread {
+//                    binding.ivPreview.setImageBitmap(bitmap)
+//                }
+//                Thread.sleep(50)
+//                bitmap.recycle()
+//            }
+//
+//        })
+
+
+        offscreenRender.create(applicationContext, 1920, 1080, null)
+
+        offscreenRender.startReadPixel(object : NV21ReadPixelDataListener {
             override fun onNv21Data(nv21Data: ByteArray, width: Int, height: Int) {
                 Log.d(TAG, "onNv21Data ${nv21Data.size}, $width x $height")
-                val bitmap  = nv21ToBitmap(nv21Data, width, height)
+                val bitmap = nv21ToBitmap(nv21Data, width, height)
                 runOnUiThread {
                     binding.ivPreview.setImageBitmap(bitmap)
                 }
@@ -104,7 +122,7 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
 
     }
 
-    fun nv21ToBitmap(data:ByteArray, width:Int, height:Int):Bitmap{
+    fun nv21ToBitmap(data: ByteArray, width: Int, height: Int): Bitmap {
         val image = YuvImage(data, ImageFormat.NV21, width, height, null)
         val bos = ByteArrayOutputStream()
         image.compressToJpeg(Rect(0, 0, width, height), 100, bos)
@@ -113,7 +131,7 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
         } finally {
             try {
                 bos.close()
-            } catch (ex:Exception){
+            } catch (ex: Exception) {
                 ex.printStackTrace()
             }
         }
@@ -125,15 +143,15 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
 
     private var surface: Surface? = null
     private fun showPreview() {
-        if (binding.cameraView.holder.surface != null){
+        if (binding.cameraView.holder.surface != null) {
             surface = binding.cameraView.holder.surface
-            hsFilters?.startShow(binding.cameraView.holder.surface, binding.cameraView.width, binding.cameraView.height)
+//            hsFilters?.startShow(binding.cameraView.holder.surface, binding.cameraView.width, binding.cameraView.height)
             return
         }
-        binding.cameraView.holder.addCallback(object : SurfaceHolder.Callback{
+        binding.cameraView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(holder: SurfaceHolder) {
                 surface = holder.surface
-                hsFilters?.startShow(holder.surface, binding.cameraView.width, binding.cameraView.height)
+//                hsFilters?.startShow(holder.surface, binding.cameraView.width, binding.cameraView.height)
             }
 
             override fun surfaceChanged(
@@ -142,7 +160,7 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
                 width: Int,
                 height: Int
             ) {
-                hsFilters?.changePreviewSize(width, height)
+//                hsFilters?.changePreviewSize(width, height)
             }
 
             override fun surfaceDestroyed(holder: SurfaceHolder) {
@@ -151,14 +169,14 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
         })
     }
 
-    private var hsFilters:HSFilters? = HSFilters()
-    private var TAG = MainActivity::class.java.simpleName
+    //    private var hsFilters:HSFilters? = HSFilters()
+    private var TAG = MainActivity2::class.java.simpleName
 
     override fun onUpdated(output: Preview.PreviewOutput?) {
         output?.surfaceTexture?.let {
 //            binding.cameraView.bindSurfaceTexture(it)
             Log.d(TAG, "onUpdate==========: ${Thread.currentThread().name}")
-            hsFilters?.bindSurfaceTexture(it, -1)
+//            hsFilters?.bindSurfaceTexture(it, -1)
         }
     }
 
@@ -168,7 +186,7 @@ class MainActivity : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener 
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1000){
+        if (requestCode == 1000) {
             if (grantResults.any { it == PackageManager.PERMISSION_DENIED }) {
                 finish()
             } else {

@@ -1,5 +1,6 @@
-package com.hs.opengl.sharetexture
+package com.hs.opengl.sharetexture.egl
 
+import android.app.Application
 import android.content.Context
 import android.opengl.GLES20
 import java.io.*
@@ -156,5 +157,18 @@ object OpenGLUtils {
         } catch (e: IOException) {
             e.printStackTrace()
         }
+    }
+
+
+    val applicationContext: Application by lazy {
+        try {
+            val activityThreadClass = Class.forName("android.app.ActivityThread")
+            val currentApplicationMethod =
+                activityThreadClass.getDeclaredMethod("currentApplication")
+
+            currentApplicationMethod.invoke(activityThreadClass) as Application
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } as Application
     }
 }
