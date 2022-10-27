@@ -38,9 +38,9 @@ class VideoSourceRender(_cameraView: GLSurfaceView) : GLSurfaceView.Renderer,
             mSurfaceTexture?.let {
                 isBinding = true
                 texName = IntArray(1)
-//                it.detachFromGLContext()
+                it.detachFromGLContext()
                 it.attachToGLContext(texName!![0])
-                it.setOnFrameAvailableListener(this)
+//                it.setOnFrameAvailableListener(this)
                 mCameraView.requestRender()
             }
         }
@@ -72,6 +72,7 @@ class VideoSourceRender(_cameraView: GLSurfaceView) : GLSurfaceView.Renderer,
 
     override fun onDrawFrame(p0: GL10?) {
         Log.i(TAG, "VideoSourceRender: onDrawFrame: $mSurfaceTexture")
+        Thread.currentThread().name = "GLSurface-OffscreenGL"
         mSurfaceTexture?.let {
             texName ?: return@let
             it.updateTexImage()

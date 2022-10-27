@@ -11,7 +11,7 @@ import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import androidx.camera.core.Preview
-import com.hs.opengl.sharetexture.databinding.ActivityMain2Binding
+import com.hs.opengl.sharetexture.databinding.ActivityMain3Binding
 import com.hs.opengl.sharetexture.databinding.ActivityMainBinding
 import com.hs.opengl.sharetexture.filter.NV21ReadPixelDataListener
 import com.rokid.android.camera.api.CameraVideoCapturer
@@ -19,12 +19,12 @@ import com.rokid.android.camera.api.CapturerObserver
 import com.rokid.android.camera.capturer.RKCamera1Capturer
 import java.io.ByteArrayOutputStream
 
-class MainActivity2 : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener {
+class MainActivity3 : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener {
     private lateinit var mCameraHelper: CameraHelper
-    private lateinit var binding: ActivityMain2Binding
+    private lateinit var binding: ActivityMain3Binding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMain2Binding.inflate(layoutInflater)
+        binding = ActivityMain3Binding.inflate(layoutInflater)
         setContentView(binding.root)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(NeedPermissions, 1000)
@@ -35,7 +35,6 @@ class MainActivity2 : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener
 
     private var isStart = false
     private var speed = 1.0f
-    val offscreenRender = OffscreenRender()
     private fun start() {
 //        mCameraHelper = CameraHelper(this, this)
 //        mCameraHelper.startPreview(1920, 1080, CameraX.LensFacing.FRONT )
@@ -60,11 +59,9 @@ class MainActivity2 : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener
             }
 
         })
-//        val textureIds = IntArray(1)
-//        GLES20.glGenTextures(1, textureIds, 0)
-//        val texture = SurfaceTexture(textureIds[0])
-//        texture.setDefaultBufferSize(1920, 1080)
-        val texture = offscreenRender.createSurfaceTexture()
+        val textureIds = IntArray(1)
+        GLES20.glGenTextures(1, textureIds, 0)
+        val texture = SurfaceTexture(textureIds[0])
         capturer.initialize(texture, applicationContext, "dsfaf", object : CapturerObserver {
             override fun onCapturerStarted(success: Boolean) {
 
@@ -75,7 +72,7 @@ class MainActivity2 : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener
 
             override fun onFrameCaptured(surfaceTexture: SurfaceTexture, rotation: Int) {
 //                hsFilters?.bindSurfaceTexture(surfaceTexture, textureIds[0])
-                    offscreenRender.onDrawFrame(rotation)
+                binding.cameraView.bindSurfaceTexture(surfaceTexture)
             }
 
         })
@@ -106,9 +103,8 @@ class MainActivity2 : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener
 //        })
 
 
-        offscreenRender.create(applicationContext, 1920, 1080, null)
-
-        offscreenRender.registerDrawListener(binding.cameraView)
+//        offscreenRender.create(applicationContext, 1920, 1080, null)
+//
 //        offscreenRender.startReadPixel(object : NV21ReadPixelDataListener {
 //            override fun onNv21Data(nv21Data: ByteArray, width: Int, height: Int) {
 //                Log.d(TAG, "onNv21Data ${nv21Data.size}, $width x $height")
@@ -172,7 +168,7 @@ class MainActivity2 : AppCompatActivity(), Preview.OnPreviewOutputUpdateListener
     }
 
     //    private var hsFilters:HSFilters? = HSFilters()
-    private var TAG = MainActivity2::class.java.simpleName
+    private var TAG = MainActivity3::class.java.simpleName
 
     override fun onUpdated(output: Preview.PreviewOutput?) {
         output?.surfaceTexture?.let {
